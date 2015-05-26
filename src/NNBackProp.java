@@ -111,6 +111,7 @@ public class NNBackProp {
      * A feed forward training execution.
      */
     void feedForward() {
+        double[] layerValues;
         for (int i = 0; i <= network.length - 1; i++) {
             if (i == 0) {
                 for (Neuron hiddenLayer1 : network[0]) {
@@ -118,7 +119,7 @@ public class NNBackProp {
                 }
                 continue;
             }
-            double[] layerValues = new double[network[i - 1].length];
+            layerValues = new double[network[i - 1].length];
             for (int j = 0; j < network[i - 1].length; j++) {
                 layerValues[j] = network[i - 1][j].sigOutput;
             }
