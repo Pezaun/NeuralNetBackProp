@@ -14,18 +14,27 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
  * @author gabriel
  */
 public class NNBackProp {
-    static boolean verbose = false;
+    boolean verbose = false;
+    boolean bias = false;
     double[] inputValues;
     double[] classValues;
     static Neuron[][] network;
     static double learningRate = 0;
     static double limitError = 0.1;
     static int epoch = 1;
+    int adjustBias = 0;
     int[] architecture;
     int epochCount = 0;
     Instance[] instances;
     NNObserver observer;
 
+    
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    
+    
     /**
      * Define a interface that observe the network training process.
      * @param observer a NNObserver implementation to be notified.
@@ -46,12 +55,19 @@ public class NNBackProp {
      * Instantiate a new network with a given architecture.
      * @param architecture an integer array with a number of neurons in each layer.
      */
-    public NNBackProp(int... architecture) {
+    public NNBackProp(boolean bias, int... architecture) {
         this.architecture = architecture;
+        this.bias = bias;
+        if(bias){
+            adjustBias = 1;
+            for (int i = 0; i < architecture.length - 1; i++) {
+                this.architecture[i]++;                
+            }
+        }
         network = new Neuron[architecture.length - 1][];
-        for (int i = 1; i < architecture.length; i++) {//COL
+        for (int i = 1; i < architecture.length; i++) {
             network[i - 1] = new Neuron[architecture[i]];
-            for (int j = 0; j < architecture[i]; j++) {//ROW
+            for (int j = 0; j < architecture[i]; j++) {
                 network[i - 1][j] = new Neuron(architecture[i - 1]);
             }
         }
@@ -66,7 +82,13 @@ public class NNBackProp {
     }
 
     public void setTrainingValues(double[] values, double[] classValue) {
-        inputValues = values;
+        if(bias){
+            inputValues = Arrays.copyOf(values, values.length + 1);
+            inputValues[inputValues.length - 1] = 1;
+        }else{
+            inputValues = values;
+        }
+        
         this.classValues = classValue;
         for (int i = 0; i < network[network.length - 1].length; i++) {
             network[network.length - 1][i].targetOutput = classValue[i];
@@ -114,8 +136,11 @@ public class NNBackProp {
         double[] layerValues;
         for (int i = 0; i <= network.length - 1; i++) {
             if (i == 0) {
-                for (Neuron hiddenLayer1 : network[0]) {
-                    hiddenLayer1.activate(inputValues);
+                for (int j = 0; j < network[0].length; j++) {
+                    network[0][j].activate(inputValues);
+                }
+                if(bias){
+                    network[0][network[0].length - 1].sigOutput = 1;
                 }
                 continue;
             }
@@ -127,6 +152,9 @@ public class NNBackProp {
             for (Neuron networkLayer : network[i]) {
                 networkLayer.activate(layerValues);
             }
+            if(bias && i < network.length - 2){
+                    network[i][network[i].length - 1].sigOutput = 1;
+                }
         }
     }
 

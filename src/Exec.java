@@ -18,18 +18,19 @@ public class Exec {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        NNBackProp nn = new NNBackProp(2,2,2,1);
+        NNBackProp nn = new NNBackProp(true,2,2,2,2,1);
         NNBackProp.learningRate = 1;
-        NNBackProp.verbose = true;
+        nn.setVerbose(true);
         nn.setWeights();
         double[] input = {0.35,0.9};
-        double[][][] weights = {{{1,1},{1,1}},{{0.1,0.8},{0.4,0.6}},{{0.3,0.9}}};
-        nn.setWeights(weights);
+        
+        nn.setWeights();
         nn.setTrainingValues(input, new double[]{0.5});
+        
         
         nn.feedForward();        
         System.out.println(nn);
-        
+//        
         System.out.println("----------------------------");   
         nn.backPropagate();
         System.out.println(nn);        
