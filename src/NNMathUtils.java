@@ -50,7 +50,8 @@ public class NNMathUtils {
         double max = 0.001;
         double min = -0.001;
         for (int i = 0; i < weights.length; i++) {
-            weights[i] = (Math.random() * (max - min)) + min;
+            //weights[i] = (Math.random() * (max - min)) + min;
+            weights[i] = (NNBackProp.random.nextDouble() * (max - min)) + min;
         }
         return weights;
     }

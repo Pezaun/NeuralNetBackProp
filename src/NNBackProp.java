@@ -2,6 +2,7 @@
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 
 /*
@@ -21,6 +22,9 @@ public class NNBackProp {
     static Neuron[][] network;
     static double learningRate = 0;
     static double limitError = 0.1;
+    static Random random;
+    boolean seedRandom = false;
+    int seedValue = 0;
     static int epoch = 1;
     int adjustBias = 0;
     int[] architecture;
@@ -29,33 +33,13 @@ public class NNBackProp {
     NNObserver observer;
 
     
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    
-    
-    /**
-     * Define a interface that observe the network training process.
-     * @param observer a NNObserver implementation to be notified.
-     */
-    public void setObserver(NNObserver observer) {
-        this.observer = observer;
-    }
-    
-    /**
-     * Define epoch number for training.
-     * @param epoch the epoch number.
-     */
-    public static void setEpoch(int epoch) {
-        NNBackProp.epoch = epoch;
-    }
-
     /**
      * Instantiate a new network with a given architecture.
+     * @param bias define bias presence at network architecture.
      * @param architecture an integer array with a number of neurons in each layer.
      */
     public NNBackProp(boolean bias, int... architecture) {
+        random = new Random();
         this.architecture = architecture;
         this.bias = bias;
         if(bias){
@@ -71,6 +55,35 @@ public class NNBackProp {
                 network[i - 1][j] = new Neuron(architecture[i - 1]);
             }
         }
+    }
+    
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public void setSeedRandom(boolean seedRandom) {
+        this.seedRandom = seedRandom;
+    }
+
+    public void setSeedValue(int seedValue) {
+        this.seedValue = seedValue;
+    }
+
+    
+    /**
+     * Define a interface that observe the network training process.
+     * @param observer a NNObserver implementation to be notified.
+     */
+    public void setObserver(NNObserver observer) {
+        this.observer = observer;
+    }
+    
+    /**
+     * Define epoch number for training.
+     * @param epoch the epoch number.
+     */
+    public static void setEpoch(int epoch) {
+        NNBackProp.epoch = epoch;
     }
 
     public static void setLimitError(double limitError) {
@@ -116,6 +129,10 @@ public class NNBackProp {
     }
 
     public void setWeights() {
+        if(seedRandom){
+            random = new Random(seedValue);
+        }
+        
         for (int i = 0; i < network.length; i++) {
             for (Neuron network1 : network[i]) {
                 if (i == 0) {
@@ -152,9 +169,9 @@ public class NNBackProp {
             for (Neuron networkLayer : network[i]) {
                 networkLayer.activate(layerValues);
             }
-            if(bias && i < network.length - 2){
+            if(bias && i < network.length - 1){
                     network[i][network[i].length - 1].sigOutput = 1;
-                }
+            }
         }
     }
 
@@ -170,7 +187,7 @@ public class NNBackProp {
         }
 
         for (int i = architecture.length - 2; i > 0; i--) {
-            for (int j = 0; j < architecture[i]; j++) {
+            for (int j = 0; j < architecture[i] - adjustBias; j++) {
                 network[i - 1][j].hiddenNeuronError(i, j);
             }
             for (int j = 0; j < architecture[i]; j++) {
@@ -215,7 +232,10 @@ public class NNBackProp {
             if(observer != null){
                 observer.notifyObserver();
             }
-            Collections.shuffle(Arrays.asList(instances));
+            
+            if(!seedRandom){
+                Collections.shuffle(Arrays.asList(instances));
+            }            
         }        
     }
 
